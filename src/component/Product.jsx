@@ -1,399 +1,26 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import BASE_URL from "../api";
 
 export default function Product() {
-  const [products, setProducts] = useState([
-    {
-      id: 2,
-      name: "Áo sơ mi nam Classic",
-      productCode: "ASM001",
-      description:
-        "Áo sơ mi nam chất liệu cotton thoáng mát, phong cách thanh lịch",
-      price: 299000.0,
-      quantity: 150,
-      subcategory: {
-        id: 1,
-        name: "áo sơ mi",
-        description: "áo sơ mi danh cho nam gioi",
-      },
-      material: "Cotton 100%",
-      sizes: [
-        {
-          name: "M",
-          description: "size M",
-        },
-        {
-          name: "S",
-          description: "size S",
-        },
-      ],
-      soldQuantity: 100,
-      category: {
-        id: 1,
-        name: "áo nam",
-        description: "áo danh cho nam giới",
-        subcategories: [
-          {
-            id: 1,
-            name: "áo sơ mi",
-            description: "áo sơ mi dành cho nam giới",
-          },
-          {
-            id: 2,
-            name: "áo polo",
-            description: "áo polo dành cho nam giới",
-          },
-        ],
-      },
-      productImages: [
-        {
-          imageId: 1,
-          imageUrl: "https://res.cloudinary.com/dsqnuw08w/image/upload/v1728705827/bz2qslnkthj4or6ssera.jpg",
-          color: {
-            name: "Đỏ",
-            description: "màu đỏ",
-          },
-          isMain: true,
-        },
-        {
-          imageId: 2,
-          imageUrl: "ododo.uur",
-          color: {
-            name: "Xanh lá",
-            description: "màu xanh lá",
-          },
-          isMain: false,
-        },
-      ],
-      origin: "Việt Nam",
-      discount: 0.15,
-    },
-    {
-      id: 2,
-      name: "Áo sơ mi nam Classic",
-      productCode: "ASM001",
-      description:
-        "Áo sơ mi nam chất liệu cotton thoáng mát, phong cách thanh lịch",
-      price: 299000.0,
-      quantity: 150,
-      subcategory: {
-        id: 1,
-        name: "áo sơ mi",
-        description: "áo sơ mi danh cho nam gioi",
-      },
-      material: "Cotton 100%",
-      sizes: [
-        {
-          name: "M",
-          description: "size M",
-        },
-        {
-          name: "S",
-          description: "size S",
-        },
-      ],
-      soldQuantity: 100,
-      category: {
-        id: 1,
-        name: "áo nam",
-        description: "áo danh cho nam giới",
-        subcategories: [
-          {
-            id: 1,
-            name: "áo sơ mi",
-            description: "áo sơ mi dành cho nam giới",
-          },
-          {
-            id: 2,
-            name: "áo polo",
-            description: "áo polo dành cho nam giới",
-          },
-        ],
-      },
-      productImages: [
-        {
-          imageId: 1,
-          imageUrl: "https://res.cloudinary.com/dsqnuw08w/image/upload/v1728705827/bz2qslnkthj4or6ssera.jpg",
-          color: {
-            name: "Đỏ",
-            description: "màu đỏ",
-          },
-          isMain: true,
-        },
-        {
-          imageId: 2,
-          imageUrl: "ododo.uur",
-          color: {
-            name: "Xanh lá",
-            description: "màu xanh lá",
-          },
-          isMain: false,
-        },
-      ],
-      origin: "Việt Nam",
-      discount: 0.15,
-    },
-    {
-      id: 2,
-      name: "Áo sơ mi nam Classic",
-      productCode: "ASM001",
-      description:
-        "Áo sơ mi nam chất liệu cotton thoáng mát, phong cách thanh lịch",
-      price: 299000.0,
-      quantity: 150,
-      subcategory: {
-        id: 1,
-        name: "áo sơ mi",
-        description: "áo sơ mi danh cho nam gioi",
-      },
-      material: "Cotton 100%",
-      sizes: [
-        {
-          name: "M",
-          description: "size M",
-        },
-        {
-          name: "S",
-          description: "size S",
-        },
-      ],
-      soldQuantity: 100,
-      category: {
-        id: 1,
-        name: "áo nam",
-        description: "áo danh cho nam giới",
-        subcategories: [
-          {
-            id: 1,
-            name: "áo sơ mi",
-            description: "áo sơ mi dành cho nam giới",
-          },
-          {
-            id: 2,
-            name: "áo polo",
-            description: "áo polo dành cho nam giới",
-          },
-        ],
-      },
-      productImages: [
-        {
-          imageId: 1,
-          imageUrl: "https://res.cloudinary.com/dsqnuw08w/image/upload/v1728705827/bz2qslnkthj4or6ssera.jpg",
-          color: {
-            name: "Đỏ",
-            description: "màu đỏ",
-          },
-          isMain: true,
-        },
-        {
-          imageId: 2,
-          imageUrl: "ododo.uur",
-          color: {
-            name: "Xanh lá",
-            description: "màu xanh lá",
-          },
-          isMain: false,
-        },
-      ],
-      origin: "Việt Nam",
-      discount: 0.15,
-    },
-    {
-      id: 2,
-      name: "Áo sơ mi nam Classic",
-      productCode: "ASM001",
-      description:
-        "Áo sơ mi nam chất liệu cotton thoáng mát, phong cách thanh lịch",
-      price: 299000.0,
-      quantity: 150,
-      subcategory: {
-        id: 1,
-        name: "áo sơ mi",
-        description: "áo sơ mi danh cho nam gioi",
-      },
-      material: "Cotton 100%",
-      sizes: [
-        {
-          name: "M",
-          description: "size M",
-        },
-        {
-          name: "S",
-          description: "size S",
-        },
-      ],
-      soldQuantity: 100,
-      category: {
-        id: 1,
-        name: "áo nam",
-        description: "áo danh cho nam giới",
-        subcategories: [
-          {
-            id: 1,
-            name: "áo sơ mi",
-            description: "áo sơ mi dành cho nam giới",
-          },
-          {
-            id: 2,
-            name: "áo polo",
-            description: "áo polo dành cho nam giới",
-          },
-        ],
-      },
-      productImages: [
-        {
-          imageId: 1,
-          imageUrl: "https://res.cloudinary.com/dsqnuw08w/image/upload/v1728705827/bz2qslnkthj4or6ssera.jpg",
-          color: {
-            name: "Đỏ",
-            description: "màu đỏ",
-          },
-          isMain: true,
-        },
-        {
-          imageId: 2,
-          imageUrl: "ododo.uur",
-          color: {
-            name: "Xanh lá",
-            description: "màu xanh lá",
-          },
-          isMain: false,
-        },
-      ],
-      origin: "Việt Nam",
-      discount: 0.15,
-    },
-    {
-      id: 2,
-      name: "Áo sơ mi nam Classic",
-      productCode: "ASM001",
-      description:
-        "Áo sơ mi nam chất liệu cotton thoáng mát, phong cách thanh lịch",
-      price: 299000.0,
-      quantity: 150,
-      subcategory: {
-        id: 1,
-        name: "áo sơ mi",
-        description: "áo sơ mi danh cho nam gioi",
-      },
-      material: "Cotton 100%",
-      sizes: [
-        {
-          name: "M",
-          description: "size M",
-        },
-        {
-          name: "S",
-          description: "size S",
-        },
-      ],
-      soldQuantity: 100,
-      category: {
-        id: 1,
-        name: "áo nam",
-        description: "áo danh cho nam giới",
-        subcategories: [
-          {
-            id: 1,
-            name: "áo sơ mi",
-            description: "áo sơ mi dành cho nam giới",
-          },
-          {
-            id: 2,
-            name: "áo polo",
-            description: "áo polo dành cho nam giới",
-          },
-        ],
-      },
-      productImages: [
-        {
-          imageId: 1,
-          imageUrl: "https://res.cloudinary.com/dsqnuw08w/image/upload/v1728705827/bz2qslnkthj4or6ssera.jpg",
-          color: {
-            name: "Đỏ",
-            description: "màu đỏ",
-          },
-          isMain: true,
-        },
-        {
-          imageId: 2,
-          imageUrl: "ododo.uur",
-          color: {
-            name: "Xanh lá",
-            description: "màu xanh lá",
-          },
-          isMain: false,
-        },
-      ],
-      origin: "Việt Nam",
-      discount: 0.15,
-    },
-    {
-      id: 2,
-      name: "Áo sơ mi nam Classic",
-      productCode: "ASM001",
-      description:
-        "Áo sơ mi nam chất liệu cotton thoáng mát, phong cách thanh lịch",
-      price: 299000.0,
-      quantity: 150,
-      subcategory: {
-        id: 1,
-        name: "áo sơ mi",
-        description: "áo sơ mi danh cho nam gioi",
-      },
-      material: "Cotton 100%",
-      sizes: [
-        {
-          name: "M",
-          description: "size M",
-        },
-        {
-          name: "S",
-          description: "size S",
-        },
-      ],
-      soldQuantity: 100,
-      category: {
-        id: 1,
-        name: "áo nam",
-        description: "áo danh cho nam giới",
-        subcategories: [
-          {
-            id: 1,
-            name: "áo sơ mi",
-            description: "áo sơ mi dành cho nam giới",
-          },
-          {
-            id: 2,
-            name: "áo polo",
-            description: "áo polo dành cho nam giới",
-          },
-        ],
-      },
-      productImages: [
-        {
-          imageId: 1,
-          imageUrl: "https://res.cloudinary.com/dsqnuw08w/image/upload/v1728705827/bz2qslnkthj4or6ssera.jpg",
-          color: {
-            name: "Đỏ",
-            description: "màu đỏ",
-          },
-          isMain: true,
-        },
-        {
-          imageId: 2,
-          imageUrl: "ododo.uur",
-          color: {
-            name: "Xanh lá",
-            description: "màu xanh lá",
-          },
-          isMain: false,
-        },
-      ],
-      origin: "Việt Nam",
-      discount: 0.15,
-    },
-  ]);
+  const [products, setProducts] = useState([]);
+
+useEffect(()=>{
+  fetchProducts();
+},[])
+
+  const fetchProducts = async () => {
+    try {
+      const response = await BASE_URL.get("dt-store/products");
+      const data = await response.data.result;
+      setProducts(data);
+      console.log(data);
+      
+    } catch (error) {
+      console.error(error);
+    }
+  }
+  
 
   const handleDelete = (id) => {
     setProducts(products.filter((product) => product.id !== id));
@@ -430,16 +57,15 @@ export default function Product() {
                 {product.name}
               </td>
               <td className="border border-gray-300 px-4 py-2">
-                {product.productCode}
+                {product.code}
               </td>
               <td className="border border-gray-300 px-4 py-2">
-                {product.productImages.find((image) => image.isMain) &&
+                {product.images.find((image) => image.isMain) &&
                 (
                   <img
-                  src={product.productImages.find((image) => image.isMain).imageUrl}
+                  src={product.images.find((image) => image.isMain).url}
                   alt="Main product image"
-                  className="w-12 h-12 object-cover"    
-                  
+                  className="w-12 h-12 object-cover"      
                   />
                   
                 )
@@ -449,17 +75,17 @@ export default function Product() {
                 {product.price.toLocaleString()} VND
               </td>
               <td className="border border-gray-300 px-4 py-2">
-                {product.quantity}
+               {product.images.map((image) => (
+                 image.map((image) => quantity+=image.quantity)
+               ))}
               </td>
-              <td className="border border-gray-300 px-4 py-2">
-                {product.soldQuantity}
-              </td>
+              
               <td className="border border-gray-300 px-4 py-2">
                 {(product.discount * 100).toFixed(0)}%
               </td>
               <td className="border border-gray-300 px-4 py-2">
                 <Link
-                  to={`/admin/edit-product/${product.productCode}`}
+                  to={`/admin/edit-product/${product.id}`}
                   className="text-blue-500 hover:underline mr-4"
                 >
                   Sửa
