@@ -2,18 +2,24 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import BASE_URL from "../api";
 import { notification } from "antd";
-import { Button, Modal } from 'antd';
+import { Button, Modal,Pagination } from "antd";
+import { set } from "date-fns";
 
 export default function Product() {
   const [products, setProducts] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [variants, setVariants] = useState([]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [idProductDelete, setIdProductDelete] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
 
   const showModal = (id) => {
     setIdProductDelete(id);
     setIsModalOpen(true);
-
   };
 
   const handleOk = () => {
@@ -25,117 +31,154 @@ export default function Product() {
   };
 
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    fetchProducts(currentPage,pageSize);
+  }, [currentPage]);
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (page,size) => {
     try {
-      const response = await BASE_URL.get("dt-store/products");
-      const data = await response.data.result;
-      setProducts(data);
-      console.log(data);
+      const response = await BASE_URL.get(`dt-store/products?page=${page}&size=${size}`);
+      const result = response.data.result;
+      setProducts(result.data);
+      setCurrentPage(result.currentPage);
+      setTotalPages(result.totalPages);
+      setTotalElements(result.totalElements);   
+      setPageSize(result.pageSizes);
+      console.log(result);
+      
     } catch (error) {
       console.error(error);
+      notification.error({
+        message: "Lỗi tải danh sách sản phẩm",
+        description: "Không thể lấy dữ liệu sản phẩm. Vui lòng thử lại sau.",
+      });
     }
   };
 
-  const handleDelete = async(id) => {
-    await BASE_URL.delete(`dt-store/products/${id}`)
-    .then((response) => {
+  const handleDelete = async (id) => {
+    try {
+      const res = await BASE_URL.delete(`dt-store/products/${id}`);
       notification.success({
-        message: response.data.message||"Xóa sản phẩm thành công",
+        message: res.data.message||"Xóa sản phẩm thành công",
       });
-    })
-    .catch((error) => {
-      console.log(error);
-      
+      setProducts(products.filter((product) => product.id !== id));
+    } catch (error) {
+      console.error(error);
       notification.error({
         message: "Xóa sản phẩm thất bại",
+        description: "Không thể xóa sản phẩm. Vui lòng thử lại sau.",
       });
-    });
-    setProducts(products.filter((product) => product.id !== id));
+    }
   };
 
+  const fetchVariants = async (id) => {
+    try {
+      const response = await BASE_URL.get(`dt-store/variants/product/${id}`);
+      setVariants(response.data.result);
+    } catch (error) {
+      console.error(error);
+      notification.error({
+        message: "Lỗi tải biến thể",
+        description: "Không thể tải danh sách biến thể. Vui lòng thử lại sau.",
+      });
+    }
+  };
+
+  const handleProductClick = (productId) => {
+    setSelectedProduct(productId);
+    fetchVariants(productId);
+  };
+  const handlePaginationChange = (page) => {
+    setCurrentPage(page);
+  }
+
   return (
-    <div className="p-5">
+    <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Quản lý sản phẩm</h1>
-
-      <Link
-        to="/products/add-product"
-        className="bg-blue-500 text-white py-2 px-4 rounded mb-4 inline-block"
-      >
-        Thêm sản phẩm mới
-      </Link>
-
-      <table className="min-w-full table-auto border-collapse border border-gray-300">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="border border-gray-300 px-4 py-2">Tên sản phẩm</th>
-            <th className="border border-gray-300 px-4 py-2">Mã sản phẩm</th>
-            <th className="border border-gray-300 px-4 py-2">Hình ảnh</th>
-            <th className="border border-gray-300 px-4 py-2">Giá</th>
-            <th className="border border-gray-300 px-4 py-2">Số lượng</th>
-            <th className="border border-gray-300 px-4 py-2">Đã bán</th>
-            <th className="border border-gray-300 px-4 py-2">Giảm giá</th>
-            <th className="border border-gray-300 px-4 py-2">Hành động</th>
-          </tr>
-        </thead>
-        <tbody>
-          {products.map((product, index) => (
-            <tr key={index} className="hover:bg-gray-50">
-              <td className="border border-gray-300 px-4 py-2">
-                {product.name}
-              </td>
-              <td className="border border-gray-300 px-4 py-2">
-                {product.code}
-              </td>
-              <td className="border border-gray-300 px-4 py-2">
-                {product.images.find((image) => image.isMain) && (
-                  <img
-                    src={product.images.find((image) => image.isMain).url}
-                    alt="Main product image"
-                    className="w-12 h-12 object-cover"
-                  />
-                )}
-              </td>
-              <td className="border border-gray-300 px-4 py-2">
-                {product.price.toLocaleString()} VND
-              </td>
-
-            {/* lay tong so luong tu image */}
-              <td className="border border-gray-300 px-4 py-2">
-                {product.images
-                  .flatMap((image) => image.sizes)
-                  .reduce((total, size) => total + size.quantity, 0)}
-              </td>
-              {/* lay tong so luong da ban image */}
-              <td className="border border-gray-300 px-4 py-2">
-                {product.images
-                  .flatMap((image) => image.sizes)
-                  .reduce((total, size) => total + size.sold, 0)}
-              </td>
-
-              <td className="border border-gray-300 px-4 py-2">
-                {(product.discount * 100).toFixed(0)}%
-              </td>
-              <td className="border border-gray-300 px-4 py-2">
-                <Link
-                  to={`/products/edit-product/${product.id}`}
-                  className="text-blue-500 hover:underline mr-4"
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <h2 className="text-xl font-semibold mb-2">Sản phẩm</h2>
+          <table className="min-w-full table-auto border-collapse border shadow-sm border-gray-300">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="border border-gray-300 px-4 py-2">Tên sản phẩm</th>
+                <th className="border border-gray-300 px-4 py-2">Mã sản phẩm</th>
+                <th className="border border-gray-300 px-4 py-2">Hình ảnh</th>
+                <th className="border border-gray-300 px-4 py-2">Đã bán</th>
+                <th className="border border-gray-300 px-4 py-2">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              {products.map((product) => (
+                <tr
+                  key={product.id}
+                  className={`cursor-pointer ${
+                    selectedProduct === product.id ? "bg-blue-100" : ""
+                  } hover:bg-gray-100`}
                 >
-                  Sửa
-                </Link>
-                <Button type="primary" onClick={()=>showModal(product.id)} danger>
-               Xóa
-              </Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <Modal title="Thông báo" open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>
-        <p>Bạn chắc chắn muốn xóa sản phẩm này ?</p>
-        
+                  <td className="border border-gray-300 px-4 py-2">
+                    {product.name}
+                  </td>
+                  <td className="border border-gray-300 px-4 py-2">
+                    {product.code}
+                  </td>
+                  <td className="border border-gray-300 px-4 py-2">
+                    <img
+                      src={product.images.filter((image) => image.isMain===true)}
+                      alt={product.name}
+                      className="w-12 h-12 object-cover rounded"
+                    />
+                  </td>
+                  <td className="border border-gray-300 px-4 py-2">
+                    {product.totalSold || 0}
+                  </td>
+                  <td className="border border-gray-300 px-4 py-2">
+                    <Button
+                      type="link"
+                      onClick={() => handleProductClick(product.id)}
+                    >
+                      Xem chi tiết
+                    </Button>
+                    <Button
+                      type="primary"
+                      danger
+                      onClick={() => showModal(product.id)}
+                    >
+                      Xóa
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <Pagination align="center"  total={totalElements} pageSize={pageSize} current={currentPage} onChange={handlePaginationChange} />
+        </div>
+        <div>
+          <h2 className="text-xl font-semibold mb-2">Chi tiết</h2>
+          {selectedProduct ? (
+            <ul className="border border-gray-300 rounded-lg p-2">
+              {variants.map((variant) => (
+                <li key={variant.id} className="p-2 border-b">
+                  <p>Màu sắc: {variant.color}</p>
+                  <p>Kích cỡ: {variant.size}</p>
+                  <p>Giá: {variant.price} VNĐ</p>
+                  <p>Tồn kho: {variant.stock}</p>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>Chọn sản phẩm để xem chi tiết.</p>
+          )}
+        </div>
+      </div>
+      <Modal
+        title="Xác nhận xóa sản phẩm"
+        open={isModalOpen}
+        onOk={handleOk}
+        onCancel={handleCancel}
+        okText="Xóa"
+        cancelText="Hủy"
+      >
+        <p>Bạn có chắc chắn muốn xóa sản phẩm này không?</p>
       </Modal>
     </div>
   );
