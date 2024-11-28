@@ -14,7 +14,7 @@ export default function App() {
           <Route index element={<Dashboard />} />
           <Route path="products" element={<Product />} />
           <Route path="products/add-product" element={<AddProduct />} />
-          <Route path="products/edit-product/:id" element={<EditProduct />} />
+          <Route path="products/edit-product/:productId" element={<EditProduct />} />
         </Route>
       </Routes>
     </Router>

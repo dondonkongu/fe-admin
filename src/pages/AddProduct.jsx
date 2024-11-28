@@ -1,364 +1,222 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import BASE_URL from '../api';
-import { notification } from 'antd';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { notification, Upload, Button, Spin, Checkbox } from "antd";
+import { UploadOutlined } from "@ant-design/icons";
+import BASE_URL from "../api";
 
 export default function AddProduct() {
-  const [formData, setFormData] = useState({
-    name: '',
-    code: '',
-    description: '',
-    price: 0,
-    material: '',
-    origin: '',
-    discount: 0,
-    categoryId: '',
-    images: [
-      {
-        url: '',
-        color: '',
-        isMain: false,
-        sizes: [
-          { name: '', quantity: 0, sold: 0 },
-        ],
-      },
-    ],
-  });
+  const [name, setName] = useState("");
+  const [code, setCode] = useState("");
+  const [description, setDescription] = useState("");
+  const [images, setImages] = useState([]);
+  const [totalSold, setTotalSold] = useState(0);
+  const [categoryId, setCategoryId] = useState("");
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const [category, setCategory] = useState([]);
+  const navigate = useNavigate();
+
   useEffect(() => {
     fetchCategories();
   }, []);
 
-  // Lấy danh sách danh mục
   const fetchCategories = async () => {
     try {
-      const response = await BASE_URL.get('/dt-store/categories');
-      setCategory(response.data.result);
+      const response = await BASE_URL.get("dt-store/categories");
+      setCategories(response.data.result);
     } catch (error) {
-      console.error('Failed to fetch categories:', error);
-    }
-  };
-
-  // Hàm upload hình ảnh
-  const uploadImage = async (file) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    try {
-      const response = await BASE_URL.post('/dt-store/images/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      console.log(response.data.result);
-      return response.data.result;
-      
-      
-      // URL trả về từ server
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      throw new Error('Image upload failed');
-    }
-  };
-
-  // Thay đổi thông tin chung của form
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  // Thay đổi thông tin hình ảnh
-  const handleImageChange = (index, field, value) => {
-    const newImages = [...formData.images];
-    newImages[index][field] = value;
-    setFormData({ ...formData, images: newImages });
-  };
-
-  // Upload file và cập nhật URL vào image
-  const handleFileChange = async (index, e) => {
-    const file = e.target.files[0];
-    if (file) {
-      try {
-        const uploadedUrl = await uploadImage(file);
-        const newImages = [...formData.images];
-        newImages[index].url = uploadedUrl;
-        setFormData({ ...formData, images: newImages });
-      } catch (error) {
-        console.error('Failed to upload image:', error);
-      }
-    }
-  };
-
-  // Thay đổi thông tin size
-  const handleSizeChange = (imageIndex, sizeIndex, field, value) => {
-    const newImages = [...formData.images];
-    newImages[imageIndex].sizes[sizeIndex][field] = value;
-    setFormData({ ...formData, images: newImages });
-  };
-
-  // Thêm hình ảnh mới
-  const addImage = () => {
-    setFormData({
-      ...formData,
-      images: [
-        ...formData.images,
-        { url: '', color: '', isMain: false, sizes: [{ name: '', quantity: 0, sold: 0 }] },
-      ],
-    });
-  };
-
-  // Xóa hình ảnh
-  const removeImage = (index) => {
-    const newImages = formData.images.filter((_, i) => i !== index);
-    setFormData({ ...formData, images: newImages });
-  };
-
-  // Thêm kích thước mới
-  const addSize = (index) => {
-    const newImages = [...formData.images];
-    newImages[index].sizes.push({ name: '', quantity: 0, sold: 0 });
-    setFormData({ ...formData, images: newImages });
-  };
-
-  // Xóa kích thước
-  const removeSize = (imageIndex, sizeIndex) => {
-    const newImages = [...formData.images];
-    newImages[imageIndex].sizes = newImages[imageIndex].sizes.filter((_, i) => i !== sizeIndex);
-    setFormData({ ...formData, images: newImages });
-  };
-
-  // Gửi form len sẻver
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    console.log('Form data:', formData);
-    try {
-      const response = await BASE_URL.post('/dt-store/products', formData);
-      console.log('Product added:', response.data);
-      notification.success({
-        message: 'Thêm sản phẩm thành công',
-        description: 'Sản phẩm đã được thêm vào hệ thống',  
-      });
-    } catch (error) {
-      console.error('Error adding product:', error);
+      console.error(error);
       notification.error({
-        message: 'Thêm sản phẩm thất bại',
-        description: 'Vui lòng thử lại sau',
+        message: "Lỗi tải danh mục",
+        description: "Không thể lấy dữ liệu danh mục. Vui lòng thử lại sau.",
+      });
+    }
+  };
+
+  // Hàm tải ảnh lên Cloudinary
+  const handleUploadToCloudinary = async (file) => {
+    setLoading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      const response = await BASE_URL.post(
+        "/dt-store/images/upload",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+      const data = response.data;
+      const newImage = {
+        url: data.result,
+        isMain: images.length === 0, 
+        file: file.originFileObj,
+      };
+
+      setImages((prevImages) => [...prevImages, newImage]);
+
+      notification.success({
+        message: "Upload thành công",
+        description: "Ảnh đã được tải lên Cloudinary.",
+      });
+    } catch (error) {
+      notification.error({
+        message: "Lỗi tải ảnh",
+        description: "Có lỗi xảy ra khi tải ảnh lên Cloudinary.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSelectMainImage = (index) => {
+    setImages((prevImages) =>
+      prevImages.map((image, i) =>
+        i === index ? { ...image, isMain: true } : { ...image, isMain: false }
+      )
+    );
+  };
+
+  const handleSubmit = async () => {
+    if (!name || !code || !categoryId) {
+      notification.error({
+        message: "Lỗi",
+        description: "Tên, mã sản phẩm và danh mục không được để trống.",
+      });
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("code", code);
+    formData.append("description", description);
+    formData.append("categoryId", categoryId);
+    formData.append("totalSold", totalSold);
+
+    images.forEach((image, index) => {
+      formData.append(`images[${index}].url`, image.url);
+      formData.append(`images[${index}].isMain`, image.isMain);
+    });
+
+    try {
+      const response = await BASE_URL.post("dt-store/products", formData);
+      notification.success({
+        message: "Thành công",
+        description: "Sản phẩm đã được thêm thành công.",
+      });
+      navigate("/products");
+    } catch (error) {
+      notification.error({
+        message: error.data.message || "Lỗi",
+        description: "Có lỗi xảy ra khi thêm sản phẩm. Vui lòng thử lại.",
       });
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-gray-100 rounded shadow-lg">
-      <h1 className="text-3xl font-bold text-gray-700 mb-6">Thêm sản phẩm mới</h1>
-      <form onSubmit={handleSubmit}>
-        {/* Tên sản phẩm */}
-        <div className="mb-4">
-          <label className="block text-gray-700 font-semibold">Tên sản phẩm</label>
+    <div className="container mx-auto p-6 bg-white rounded-lg shadow-md">
+      <h1 className="text-3xl font-bold mb-6 text-center">Thêm sản phẩm mới</h1>
+      <div className="space-y-4">
+        <div>
+          <label className="block font-medium">Tên sản phẩm:</label>
           <input
             type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            placeholder="Tên sản phẩm"
-            required
-            className="w-full p-3 border rounded"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full px-4 py-2 border rounded"
+            placeholder="Nhập tên sản phẩm"
           />
         </div>
-        {/* Mã sản phẩm */}
-        <div className="mb-4">
-          <label className="block text-gray-700 font-semibold">Mã sản phẩm</label>
+
+        <div>
+          <label className="block font-medium">Mã sản phẩm:</label>
           <input
             type="text"
-            name="code"
-            value={formData.code}
-            onChange={handleInputChange}
-            placeholder="Mã sản phẩm"
-            required
-            className="w-full p-3 border rounded"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            className="w-full px-4 py-2 border rounded"
+            placeholder="Nhập mã sản phẩm"
           />
         </div>
-          {/* Danh mục */}
-          <div className="mb-4">
-          <label className="block text-gray-700 font-semibold">Danh mục</label>
+
+        <div>
+          <label className="block font-medium">Mô tả:</label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="w-full px-4 py-2 border rounded"
+            placeholder="Nhập mô tả sản phẩm"
+          />
+        </div>
+
+        <div>
+          <label className="block font-medium">Danh mục:</label>
           <select
-            name="categoryId"
-            value={formData.categoryId}
-            onChange={handleInputChange}
-            required
-            className="w-full p-3 border rounded"
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value)}
+            className="w-full px-4 py-2 border rounded"
           >
             <option value="">Chọn danh mục</option>
-            {category.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
               </option>
             ))}
           </select>
         </div>
-        {/* Mô tả */}
-        <div className="mb-4">
-          <label className="block text-gray-700 font-semibold">Mô tả</label>
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleInputChange}
-            placeholder="Mô tả"
-            required
-            className="w-full p-3 border rounded"
-          />
-        </div>
-         {/* Giá */}
-         <div className="mb-4">
-          <label className="block text-gray-700 font-semibold">Giá</label>
-          <input
-            type="number"
-            name="price"
-            value={formData.price}
-            onChange={handleInputChange}
-            placeholder="Giá"
-            required
-            className="w-full p-3 border rounded"
-          />
-        </div>
-        {/* Chất liệu */}
-        <div className="mb-4">
-          <label className="block text-gray-700 font-semibold">Chất liệu</label>
-          <input
-            type="text"
-            name="material"
-            value={formData.material}
-            onChange={handleInputChange}
-            placeholder="Chất liệu"
-            required
-            className="w-full p-3 border rounded"
-          />
-        </div>
-        {/* Xuất xứ */}
-        <div className="mb-4">
-          <label className="block text-gray-700 font-semibold">Xuất xứ</label>
-          <input
-            type="text"
-            name="origin"
-            value={formData.origin}
-            onChange={handleInputChange}
-            placeholder="Xuất xứ"
-            required
-            className="w-full p-3 border rounded"
-          />
-        </div>
-        {/* Giảm giá */}
-        <div className="mb-4">
-          <label className="block text-gray-700 font-semibold">Giảm giá</label>
-          <input
-            type="number"
-            name="discount"
-            value={formData.discount}
-            onChange={handleInputChange}
-            placeholder="Giảm giá"
-            required
-            className="w-full p-3 border rounded"
-          />
-        </div>
-      
 
-       
+        <div>
+          <label className="block font-medium">Hình ảnh:</label>
+          <Upload
+            listType="picture"
+            multiple
+            beforeUpload={(file) => {
+              handleUploadToCloudinary(file);
+              return false; 
+            }}
+          >
+            <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
+          </Upload>
+        </div>
 
-        {/* Hình ảnh và kích thước */}
-        {formData.images.map((image, index) => (
-          <div key={index} className="border p-4 mb-4 rounded bg-white">
-            <h3 className="text-lg font-semibold text-gray-700">Hình ảnh {index + 1}</h3>
-            <div className="mb-2">
-              <label className="block text-gray-700">Upload hình ảnh</label>
-              <input
-                type="file"
-                onChange={(e) => handleFileChange(index, e)}
-                className="w-full p-3 border rounded"
-              />
-              {image.url && (
-                <img src={image.url} alt={`Uploaded ${index}`} className="mt-2 max-h-40" />
-              )}
+        {images.length > 0 && (
+          <div>
+            <h2 className="text-xl font-semibold">Danh sách ảnh đã upload</h2>
+            <div className="grid grid-cols-3 gap-4">
+              {images.map((image, index) => {
+             
+                return (
+                  <div key={index} className="relative">
+                    <img
+                      src={image.url} 
+                      alt={`Ảnh ${index + 1}`}
+                      className="w-full h-auto rounded-lg"
+                    />
+                    <div className="absolute top-0 right-0 bg-white px-2 py-1 rounded-l-lg shadow-md">
+                      <Checkbox
+                        checked={image.isMain}
+                        onChange={() => handleSelectMainImage(index)}
+                      >
+                        Chính
+                      </Checkbox>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-            <div className="mb-2">
-              <label className="block text-gray-700">Tên màu</label>
-              <input
-                type="text"
-                value={image.color}
-                onChange={(e) => handleImageChange(index, 'color', e.target.value)}
-                placeholder="Tên màu"
-                className="w-full p-3 border rounded"
-              />
-            </div>
-            <div className="mb-2 flex items-center">
-              <label className="block text-gray-700 mr-2">Ảnh chính</label>
-              <input
-                type="checkbox"
-                checked={image.isMain}
-                onChange={(e) => handleImageChange(index, 'isMain', e.target.checked)}
-              />
-            </div>
-
-            <div className="mt-4">
-              <h4 className="font-semibold text-gray-700">Kích thước</h4>
-              {image.sizes.map((size, sizeIndex) => (
-                <div key={sizeIndex} className="flex space-x-4 items-center mb-2">
-                  <input
-                    type="text"
-                    value={size.name}
-                    onChange={(e) => handleSizeChange(index, sizeIndex, 'name', e.target.value)}
-                    placeholder="Tên kích thước"
-                    className="p-2 border rounded w-1/3"
-                  />
-                  <input
-                    type="number"
-                    value={size.quantity}
-                    onChange={(e) => handleSizeChange(index, sizeIndex, 'quantity', e.target.value)}
-                    placeholder="Số lượng"
-                    className="p-2 border rounded w-1/3"
-                  />
-                  <input
-                    type="number"
-                    value={size.sold}
-                    onChange={(e) => handleSizeChange(index, sizeIndex, 'sold', e.target.value)}
-                    placeholder="Đã bán"
-                    className="p-2 border rounded w-1/3"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeSize(index, sizeIndex)}
-                    className="bg-red-500 text-white px-3 py-1 rounded"
-                  >
-                    Xóa
-                  </button>
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={() => addSize(index)}
-                className="bg-blue-500 text-white px-3 py-1 rounded mt-2"
-              >
-                Thêm kích thước
-              </button>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => removeImage(index)}
-              className="bg-red-500 text-white px-3 py-1 rounded mt-4"
-            >
-              Xóa hình ảnh
-            </button>
           </div>
-        ))}
-        <button
-          type="button"
-          onClick={addImage}
-          className="bg-green-500 text-white px-4 py-2 rounded mb-6"
-        >
-          Thêm hình ảnh
-        </button>
-
-        <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
-          Thêm sản phẩm
-        </button>
-      </form>
+        )}
+        <div className="flex justify-end mt-4">
+          <Button
+            type="primary"
+            onClick={handleSubmit}
+            className="bg-blue-500 hover:bg-blue-600 text-white"
+            disabled={loading || images.length === 0}
+          >
+            {loading ? <Spin /> : "Thêm sản phẩm"}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
