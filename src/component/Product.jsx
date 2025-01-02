@@ -21,8 +21,7 @@ export default function Product() {
     productId: "",
     color: "",
     size: "",
-    price: "",
-    stock: ""
+    stock: "",
   });
   
   const showModal = (id) => {
@@ -130,7 +129,7 @@ export default function Product() {
       const res = await BASE_URL.post("dt-store/variants", currentVariant);
       notification.success({ message: "Thêm mẫu thành công" });
       setVariants([...variants, res.data.result]);
-      setCurrentVariant({productId:"", color: "", size: "", price: "", stock: "" }); 
+      setCurrentVariant({productId:"", color: "", size: "",  stock: "" }); 
       setIsVariantModalOpen(false); 
     } catch (error) {
       notification.error({ message: "Thêm mẫu thất bại" });
@@ -158,6 +157,7 @@ export default function Product() {
                 <th className="border border-gray-200 px-6 py-3">Mã sản phẩm</th>
                 <th className="border border-gray-200 px-6 py-3">Hình ảnh</th>
                 <th className="border border-gray-200 px-6 py-3">Đã bán</th>
+                <th className="border border-gray-200 px-6 py-3">Giá</th>
                 <th className="border border-gray-200 px-6 py-3">Hành động</th>
               </tr>
             </thead>
@@ -189,6 +189,9 @@ export default function Product() {
                   </td>
                   <td className="border border-gray-200 text-gray-700">
                     {product.totalSold || 0}
+                  </td>
+                  <td className="border border-gray-200 text-gray-700">
+                    {product.price || 0}
                   </td>
                   <td className="border border-gray-200 ">
                     <div className="flex items-center justify-start space-x-3 h-full">
@@ -244,9 +247,7 @@ export default function Product() {
                   <tr>
                     <th className="px-4 py-2 border-b text-left">Màu sắc</th>
                     <th className="px-4 py-2 border-b text-left">Kích cỡ</th>
-                    <th className="px-4 py-2 border-b text-left">Giá</th>
                     <th className="px-4 py-2 border-b text-left">Tồn kho</th>
-                    <th className="px-4 py-2 border-b text-left">Đã bán</th>
                     <th className="px-4 py-2 border-b text-left">Hành động</th>
                   </tr>
                 </thead>
@@ -255,9 +256,7 @@ export default function Product() {
                     <tr key={variant.id} className="hover:bg-gray-100">
                       <td className="px-4 py-2 border-b">{variant.color}</td>
                       <td className="px-4 py-2 border-b">{variant.size}</td>
-                      <td className="px-4 py-2 border-b">{variant.price} VNĐ</td>
                       <td className="px-4 py-2 border-b">{variant.stock}</td>
-                      <td className="px-4 py-2 border-b">{variant.sold}</td>
                       <td className="px-4 py-2 border-b flex gap-2">
                         <button
                           className="px-4 py-2 text-white bg-blue-500 hover:bg-blue-600 rounded-lg"
@@ -276,7 +275,7 @@ export default function Product() {
                   ))}
                 </tbody>
               </table>
-              {/* Thêm mẫu - nút Thêm */}
+             
               <div className="flex justify-end mt-4">
                 <button
                   onClick={() => showVariantModal()}
@@ -328,18 +327,14 @@ export default function Product() {
             placeholder="Kích cỡ"
             className="mb-4"
           />
-          <Input
-            value={currentVariant.price}
-            onChange={(e) => setCurrentVariant({ ...currentVariant, price: e.target.value })}
-            placeholder="Giá"
-            className="mb-4"
-          />
+         
           <Input
             value={currentVariant.stock}
             onChange={(e) => setCurrentVariant({ ...currentVariant, stock: e.target.value })}
             placeholder="Tồn kho"
             className="mb-4"
           />
+          
         </div>
       </Modal>
     </div>

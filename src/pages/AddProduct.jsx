@@ -8,16 +8,21 @@ export default function AddProduct() {
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [description, setDescription] = useState("");
+  const [price, setPrice] = useState(0);
+  const [material, setMaterial] = useState("");
   const [images, setImages] = useState([]);
   const [totalSold, setTotalSold] = useState(0);
   const [categoryId, setCategoryId] = useState("");
   const [categories, setCategories] = useState([]);
+  const [subcategoryId, setSubcategoryId] = useState("");
+  const [subcategories, setSubcategories] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchCategories();
+    fetchSubcategories();
   }, []);
 
   const fetchCategories = async () => {
@@ -32,6 +37,19 @@ export default function AddProduct() {
       });
     }
   };
+  const fetchSubcategories = async () => {
+    try {
+      const response = await BASE_URL.get(`dt-store/subcategories`);
+      setSubcategories(response.data.result);
+    } catch (error) {
+      console.error(error);
+      notification.error({
+        message: "Lỗi tải danh mục con",
+        description: "Không thể lấy dữ liệu danh mục con. Vui lòng thử lại sau.",
+      });
+    }
+  };
+
 
   // Hàm tải ảnh lên Cloudinary
   const handleUploadToCloudinary = async (file) => {
@@ -90,7 +108,10 @@ export default function AddProduct() {
     formData.append("name", name);
     formData.append("code", code);
     formData.append("description", description);
+    formData.append("price", price);
+    formData.append("material", material);
     formData.append("categoryId", categoryId);
+    formData.append("subcategoryId", subcategoryId);
     formData.append("totalSold", totalSold);
 
     images.forEach((image, index) => {
@@ -148,6 +169,26 @@ export default function AddProduct() {
             placeholder="Nhập mô tả sản phẩm"
           />
         </div>
+        <div>
+          <label className="block font-medium">Giá:</label>
+          <input
+            type="number"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            className="w-full px-4 py-2 border rounded"
+            placeholder="Nhập giá sản phẩm"
+          />
+        </div>
+        <div>
+          <label className="block font-medium">Chất liệu:</label>
+          <input
+            type="text"
+            value={material}
+            onChange={(e) => setMaterial(e.target.value)}
+            className="w-full px-4 py-2 border rounded"
+            placeholder="Nhập chất liệu sản phẩm"
+          />
+        </div>
 
         <div>
           <label className="block font-medium">Danh mục:</label>
@@ -160,6 +201,21 @@ export default function AddProduct() {
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block font-medium">Danh mục con:</label>
+          <select
+            value={subcategoryId}
+            onChange={(e) => setSubcategoryId(e.target.value)}
+            className="w-full px-4 py-2 border rounded"
+          >
+            <option value="">Chọn danh mục con</option>
+            {subcategories.map((subcategory) => (
+              <option key={subcategory.id} value={subcategory.id}>
+                {subcategory.name}
               </option>
             ))}
           </select>
